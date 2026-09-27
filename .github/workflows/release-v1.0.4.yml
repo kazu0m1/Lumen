@@ -1,0 +1,105 @@
+name: Release Lumen v1.0.4
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - RELEASE_NOTES_v1.0.4.md
+      - .github/workflows/release-v1.0.4.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: startsWith(github.event.head_commit.message, 'Release Lumen v1.0.4')
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout exact release commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build portable release
+        shell: cmd
+        run: Make-PortableRelease.cmd
+
+      - name: Verify package and version
+        shell: pwsh
+        run: |
+          $zip = "dist\\Lumen-v1.0.4-win-portable.zip"
+          if (-not (Test-Path $zip)) { throw "Release ZIP not found: $zip" }
+
+          $exe = "Portable\\Lumen.exe"
+          if (-not (Test-Path $exe)) { throw "Lumen.exe not found after build." }
+
+          $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Resolve-Path $exe))
+          if ($info.FileVersion -ne "1.0.4.0") {
+            throw "Unexpected FileVersion: $($info.FileVersion)"
+          }
+
+          $hash = (Get-FileHash -Algorithm SHA256 $zip).Hash.ToLowerInvariant()
+          $checksum = "dist\Lumen-v1.0.4-win-portable.zip.sha256"
+          "$hash  Lumen-v1.0.4-win-portable.zip" | Set-Content -Path $checksum -Encoding ascii
+          "RELEASE_SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "SHA-256: $hash"
+
+      - name: Create annotated release tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git rev-parse --verify --quiet "refs/tags/v1.0.4" | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            throw "Tag v1.0.4 already exists."
+          }
+
+          git tag -a v1.0.4 $env:GITHUB_SHA -m "Lumen v1.0.4"
+          git push origin v1.0.4
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.0.4 `
+            "dist\\Lumen-v1.0.4-win-portable.zip" `
+            "dist\\Lumen-v1.0.4-win-portable.zip.sha256" `
+            --repo "${{ github.repository }}" `
+            --title "Lumen v1.0.4" `
+            --notes-file "RELEASE_NOTES_v1.0.4.md" `
+            --verify-tag
+
+      - name: Verify published asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          New-Item -ItemType Directory -Path "release-verify" -Force | Out-Null
+          gh release download v1.0.4 `
+            --repo "${{ github.repository }}" `
+            --pattern "Lumen-v1.0.4-win-portable.zip" `
+            --dir "release-verify"
+
+          $downloaded = "release-verify\\Lumen-v1.0.4-win-portable.zip"
+          if (-not (Test-Path $downloaded)) { throw "Published asset could not be downloaded." }
+
+          $downloadedHash = (Get-FileHash -Algorithm SHA256 $downloaded).Hash.ToLowerInvariant()
+          if ($downloadedHash -ne $env:RELEASE_SHA256) {
+            throw "Published asset SHA-256 mismatch."
+          }
+
+          Expand-Archive -Path $downloaded -DestinationPath "release-verify\\expanded" -Force
+          $publishedExe = "release-verify\\expanded\\Lumen.exe"
+          if (-not (Test-Path $publishedExe)) { throw "Published ZIP does not contain Lumen.exe." }
+
+          $publishedInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo((Resolve-Path $publishedExe))
+          if ($publishedInfo.FileVersion -ne "1.0.4.0") {
+            throw "Published Lumen.exe has unexpected FileVersion: $($publishedInfo.FileVersion)"
+          }
+
+          Write-Host "Published asset verified."
+          Write-Host "SHA-256: $downloadedHash"

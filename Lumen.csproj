@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{71BD2D1E-44CE-4D88-8F53-B6ACFBEA9D10}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>LumenApp</RootNamespace>
+    <AssemblyName>Lumen</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <StartupObject>LumenApp.Program</StartupObject>
+    <ApplicationIcon>Assets\Lumen.ico</ApplicationIcon>
+    <ApplicationManifest>Assets\Lumen.exe.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Source\Program.cs" />
+    <Compile Include="Source\Models.cs" />
+    <Compile Include="Source\Settings.cs" />
+    <Compile Include="Source\ShellHelpers.cs" />
+    <Compile Include="Source\Imaging.cs" />
+    <Compile Include="Source\ExifSettingsWindow.cs" />
+    <Compile Include="Source\ExportWindow.cs" />
+    <Compile Include="Source\MainWindow.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Lumen.ico" />
+    <None Include="Assets\Lumen.exe.manifest" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,23 @@
+# Build outputs
+bin/
+obj/
+dist/
+release-verify/
+*.pdb
+
+# Portable runtime state / generated binary
+Portable/Lumen.exe
+Portable/Data/*
+!Portable/Data/README.txt
+
+# Visual Studio / editor
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
