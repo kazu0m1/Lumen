@@ -25,8 +25,8 @@ jobs:
         shell: pwsh
         run: |
           $parts = Get-ChildItem "bootstrap\part*.txt" | Sort-Object Name
-          if ($parts.Count -ne 10) {
-            throw "Expected 10 bootstrap parts, got $($parts.Count)."
+          if ($parts.Count -ne 11) {
+            throw "Expected 11 bootstrap parts, got $($parts.Count)."
           }
 
           $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
