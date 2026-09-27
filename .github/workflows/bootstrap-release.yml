@@ -25,8 +25,8 @@ jobs:
         shell: pwsh
         run: |
           $parts = Get-ChildItem "bootstrap\part*.txt" | Sort-Object Name
-          if ($parts.Count -ne 11) {
-            throw "Expected 11 bootstrap parts, got $($parts.Count)."
+          if ($parts.Count -ne 13) {
+            throw "Expected 13 bootstrap parts, got $($parts.Count)."
           }
 
           $b64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
@@ -47,6 +47,7 @@ jobs:
           Remove-Item "lumen-bootstrap.zip" -Force
           Remove-Item "_bootstrap" -Recurse -Force
           Remove-Item ".github\workflows\bootstrap-release.yml" -Force
+          if (Test-Path ".github\workflows\bootstrap-source.yml") { Remove-Item ".github\workflows\bootstrap-source.yml" -Force }
 
       - name: Create formal v1.0.4 source commit
         shell: pwsh
